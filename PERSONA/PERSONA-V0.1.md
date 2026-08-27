@@ -33,3 +33,39 @@ Administrador abre la app → entra a "Nueva cita" → selecciona cliente / serv
 ## Salida
 
 Primera versión de los tres artefactos (Persona, App map, Flujo) para el Gestor de Citas de la barbería, enfocados en el administrador de citas como usuario principal.
+
+
+
+
+# Segundo Flujo (cancelacion de citas)
+## Persona v0.2
+
+- **Usuario:** Administrador de citas de la barbería (el encargado que hoy organiza todo por WhatsApp).
+- **Contexto:** Un cliente le avisa por WhatsApp que ya no puede asistir a su cita, o el administrador necesita liberar un horario por algún imprevisto. Hoy tiene que buscar el chat, borrar la cita a mano de donde la haya anotado, y a veces se le olvida liberar el horario, generando choques cuando alguien más quiere agendar esa misma franja.
+- **Objetivo:** Cancelar una cita ya agendada de forma rápida y segura, liberando automáticamente ese horario para que vuelva a estar disponible.
+- **Dificultad:** Ubicar rápido cuál cita corresponde cancelar entre varias del mismo día, evitar cancelar la equivocada por error, y asegurarse de que el horario liberado quede visible de inmediato para nuevas reservas.
+- **Necesidad:** Una pantalla donde pueda ver las citas activas, seleccionar la que quiere cancelar, confirmar antes de eliminarla (para evitar cancelaciones accidentales), y que el sistema libere el horario automáticamente.
+
+
+## App map v0.2
+
+- **App del Administrador (móvil)** → parte principal del alcance de este proyecto.
+  - Agenda de citas → ver citas activas del día / semana.
+  - Cancelar cita → listar citas activas y elegir cuál cancelar.
+    - Diálogo de confirmación ("¿Desea cancelar esta cita?") → evita cancelaciones accidentales.
+  - Gestión de horarios → el horario cancelado vuelve a quedar disponible.
+- **App del Cliente (móvil)** → existe pero **no** forma parte del alcance a evaluar.
+  - Chat con el administrador → reemplaza al WhatsApp actual.
+  - (No se profundiza en esta app: el foco de la persona es el administrador).
+
+
+## Flujo v0.2 (camino normal de una sola tarea)
+
+**Tarea: cancelar una cita existente**
+
+Administrador abre la app → entra a "Cancelar cita" → ve la lista de citas activas → selecciona la cita que desea cancelar → aparece un diálogo de confirmación ("¿Desea Cancelar esta Cita?") → confirma con "SI" → la cita se marca como cancelada y el horario queda libre en la agenda
+
+
+## Salida
+
+Primera versión de los tres artefactos (Persona, App map, Flujo) para el flujo de **Cancelación de Citas** del Gestor de Citas de la barbería, enfocados en el administrador de citas como usuario principal.
