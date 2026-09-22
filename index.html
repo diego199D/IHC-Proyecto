@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Agenda de hoy · Gestor de Citas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1 class="header__titulo" id="header-titulo">Agenda de hoy 🔥</h1>
+      <p class="header__sub" id="header-sub">martes, 8 de septiembre</p>
+    </header>
+
+    <aside class="sidebar">
+      <nav class="nav" aria-label="Navegación principal">
+        <a href="#" class="nav__item nav__item--activo" id="nav-overview" aria-current="page"><span class="nav__icono" aria-hidden="true">📅</span>Overview</a>
+        <a href="#" class="nav__item" id="nav-servicios"><span class="nav__icono" aria-hidden="true">✂️</span>Servicios</a>
+        <a href="#" class="nav__item" id="nav-bebidas"><span class="nav__icono" aria-hidden="true">🥤</span>bebidas</a>
+      </nav>
+    </aside>
+
+    <main class="panel">
+
+      <!-- ============================================================
+           FLUJO 1 y 2: Agenda de hoy
+           ============================================================ -->
+      <section class="vista" id="vista-agenda">
+        <ul class="citas" id="lista-citas"></ul>
+        <p class="vacio" id="agenda-vacia">No hay clientes agendados</p>
+
+        <div class="panel__footer">
+          <button type="button" class="btn" id="btn-agregar">Agregar cita</button>
+        </div>
+      </section>
+
+      <!-- Popup: detalle de una cita (click sobre una tarjeta de la agenda) -->
+      <div class="overlay" id="popup-cita" hidden>
+        <div class="overlay__fondo" data-cerrar-popup></div>
+        <div class="popup" role="dialog" aria-modal="true" aria-labelledby="popup-nombre">
+          <div class="popup__cliente">
+            <span class="cita__avatar" aria-hidden="true" id="popup-avatar">😊</span>
+            <div>
+              <p class="cita__nombre" id="popup-nombre"></p>
+              <p class="cita__servicio" id="popup-servicio-mini"></p>
+            </div>
+          </div>
+          <dl class="popup__datos">
+            <div><dt>Telefono:</dt><dd id="popup-telefono"></dd></div>
+            <div><dt>Servicio:</dt><dd id="popup-servicio"></dd></div>
+            <div><dt>Horario:</dt><dd id="popup-horario"></dd></div>
+          </dl>
+          <div class="popup__footer">
+            <button type="button" class="btn" id="popup-btn-atender">Atender</button>
+            <button type="button" class="btn" id="popup-btn-editar">Editar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           FLUJO 1: Agregar una cita — paso 1: datos del cliente
+           ============================================================ -->
+      <section class="vista" id="vista-cliente-nuevo" hidden>
+        <form id="form-cliente-nuevo" novalidate>
+          <h2 class="seccion-titulo">Ingrese los datos del cliente:</h2>
+          <p class="error" id="error-cliente-nuevo" role="alert" hidden>Rellene el formulario completo y elija el servicio..!</p>
+
+          <div class="campo">
+            <label for="nc-nombre">Nombre:</label>
+            <input type="text" id="nc-nombre" name="nombre" autocomplete="name">
+          </div>
+          <div class="campo">
+            <label for="nc-telefono">Telefono:</label>
+            <input type="tel" id="nc-telefono" name="telefono" class="corto" inputmode="tel" autocomplete="tel">
+          </div>
+
+          <fieldset>
+            <legend class="etiqueta">Tipo de servicio:</legend>
+            <div class="servicios" id="nc-servicios"></div>
+          </fieldset>
+
+          <div class="panel__footer panel__footer--derecha">
+            <button type="button" class="btn solo-movil" data-cancelar="agenda">Cancelar</button>
+            <button type="submit" class="btn" id="btn-cliente-nuevo-siguiente">Siguiente</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- FLUJO 1: Agregar una cita — paso 2: horario -->
+      <section class="vista" id="vista-horario-nuevo" hidden>
+        <form id="form-horario-nuevo" novalidate>
+          <fieldset>
+            <legend class="seccion-titulo">Seleccione un horario disponible</legend>
+            <p class="error" id="error-horario-nuevo" role="alert" hidden>elija un horario..!</p>
+            <div class="horas" id="nh-horas"></div>
+          </fieldset>
+
+          <div class="panel__footer panel__footer--derecha">
+            <button type="button" class="btn solo-movil" data-cancelar="agenda">Cancelar</button>
+            <button type="submit" class="btn" id="btn-horario-nuevo-guardar">Guardar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============================================================
+           FLUJO 2: Editar cita — paso 1: datos del cliente
+           ============================================================ -->
+      <section class="vista" id="vista-cliente-editar" hidden>
+        <form id="form-cliente-editar" novalidate>
+          <h2 class="seccion-titulo">Ingrese los datos del cliente:</h2>
+          <p class="error" id="error-cliente-editar" role="alert" hidden>Rellene el formulario completo y elija el servicio..!</p>
+
+          <div class="campo">
+            <label for="ec-nombre">Nombre:</label>
+            <input type="text" id="ec-nombre" name="nombre" autocomplete="name">
+          </div>
+          <div class="campo">
+            <label for="ec-telefono">Telefono:</label>
+            <input type="tel" id="ec-telefono" name="telefono" class="corto" inputmode="tel" autocomplete="tel">
+          </div>
+
+          <fieldset>
+            <legend class="etiqueta">Tipo de servicio:</legend>
+            <div class="servicios" id="ec-servicios"></div>
+          </fieldset>
+
+          <div class="panel__footer panel__footer--entre">
+            <button type="button" class="btn btn--fantasma" id="btn-cita-eliminar">Eliminar cita</button>
+            <div class="grupo-derecha">
+              <button type="button" class="btn solo-movil" data-cancelar="agenda">Cancelar</button>
+              <button type="submit" class="btn" id="btn-cliente-editar-siguiente">Siguiente</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- FLUJO 2: Editar cita — paso 2: horario -->
+      <section class="vista" id="vista-horario-editar" hidden>
+        <form id="form-horario-editar" novalidate>
+          <fieldset>
+            <legend class="seccion-titulo">Seleccione un horario disponible</legend>
+            <p class="error" id="error-horario-editar" role="alert" hidden>Elija un horario..!</p>
+            <div class="horas" id="eh-horas"></div>
+          </fieldset>
+
+          <div class="panel__footer panel__footer--derecha">
+            <button type="button" class="btn solo-movil" data-cancelar="agenda">Cancelar</button>
+            <button type="submit" class="btn" id="btn-horario-editar-guardar">Guardar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============================================================
+           FLUJO 4: Atendiendo al cliente
+           ============================================================ -->
+      <section class="vista" id="vista-atender" hidden>
+        <div class="tarjeta-cliente">
+          <span class="cita__avatar" aria-hidden="true" id="atender-avatar">😊</span>
+          <div>
+            <p class="cita__nombre" id="atender-nombre"></p>
+            <p class="cita__servicio" id="atender-servicio"></p>
+            <p class="cita__hora" id="atender-hora"></p>
+          </div>
+        </div>
+
+        <p class="etiqueta" id="atender-consumo-titulo" hidden>Consumo:</p>
+        <ul class="citas lista-consumo" id="atender-consumo-lista"></ul>
+        <p class="vacio" id="atender-consumo-vacio">Aún no hay consumo registrado</p>
+
+        <div class="panel__footer">
+          <button type="button" class="btn" id="btn-atender-cobrar">Cobrar</button>
+          <button type="button" class="btn" id="btn-atender-agregar-consumo">Agregar consumo</button>
+        </div>
+      </section>
+
+      <!-- FLUJO 4: Agregar consumo -->
+      <section class="vista" id="vista-consumo-nuevo" hidden>
+        <form id="form-consumo-nuevo" novalidate>
+          <fieldset>
+            <legend class="seccion-titulo">Bebidas disponibles:</legend>
+            <p class="error" id="error-consumo-nuevo" role="alert" hidden>Seleccione al menos un producto!</p>
+            <div class="servicios servicios--lista" id="lista-bebidas-disponibles"></div>
+          </fieldset>
+
+          <div class="panel__footer panel__footer--derecha">
+            <button type="button" class="btn solo-movil" data-cancelar="atender">Cancelar</button>
+            <button type="submit" class="btn" id="btn-consumo-guardar">Agregar consumo</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- FLUJO 4: Cobrar -->
+      <section class="vista" id="vista-cobrar" hidden>
+        <h2 class="seccion-titulo">Productos y servicios a cobrar:</h2>
+        <ul class="citas lista-consumo" id="lista-cobrar"></ul>
+        <p class="total">Total Bs: <strong id="cobrar-total">0</strong></p>
+
+        <div class="panel__footer panel__footer--derecha">
+          <button type="button" class="btn solo-movil" data-cancelar="atender">Cancelar</button>
+          <button type="button" class="btn" id="btn-cobrar-confirmar">Cobrar</button>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           FLUJO 3: Gestión de servicios
+           ============================================================ -->
+      <section class="vista" id="vista-servicios" hidden>
+        <ul class="servicios servicios--lista" id="lista-servicios-admin"></ul>
+        <p class="vacio" id="servicios-vacio">No hay servicios registrados</p>
+
+        <div class="panel__footer">
+          <button type="button" class="btn" id="btn-servicio-agregar">Agregar servicio</button>
+        </div>
+      </section>
+
+      <!-- Editar servicio -->
+      <section class="vista" id="vista-servicio-editar" hidden>
+        <form id="form-servicio-editar" novalidate>
+          <div class="servicio servicio--vista" id="se-preview">
+            <span class="servicio__icono" aria-hidden="true">✂️</span>
+            <span>
+              <span class="servicio__nombre" id="se-preview-nombre"></span>
+              <span class="servicio__duracion" id="se-preview-duracion"></span>
+              <span class="servicio__precio" id="se-preview-precio"></span>
+            </span>
+          </div>
+
+          <p class="error" id="error-servicio-editar" role="alert" hidden>Complete todos los campos</p>
+
+          <div class="campo">
+            <label for="se-nombre">Nombre:</label>
+            <input type="text" id="se-nombre" name="nombre">
+          </div>
+          <div class="campo">
+            <label for="se-tiempo">Tiempo:</label>
+            <input type="text" id="se-tiempo" name="tiempo" class="corto">
+          </div>
+          <div class="campo">
+            <label for="se-precio">Precio:</label>
+            <input type="number" id="se-precio" name="precio" class="corto" min="0" step="1">
+          </div>
+
+          <div class="panel__footer panel__footer--entre">
+            <button type="button" class="btn btn--fantasma" id="btn-servicio-eliminar">Eliminar</button>
+            <div class="grupo-derecha">
+              <button type="button" class="btn solo-movil" data-cancelar="servicios">Cancelar</button>
+              <button type="submit" class="btn" id="btn-servicio-editar-guardar">Editar</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Agregar nuevo servicio -->
+      <section class="vista" id="vista-servicio-nuevo" hidden>
+        <form id="form-servicio-nuevo" novalidate>
+          <h2 class="seccion-titulo">Creación de nuevo servicio</h2>
+          <p class="error" id="error-servicio-nuevo" role="alert" hidden>Complete todos los campos</p>
+
+          <div class="campo">
+            <label for="sn-nombre">Nombre:</label>
+            <input type="text" id="sn-nombre" name="nombre">
+          </div>
+          <div class="campo">
+            <label for="sn-tiempo">Tiempo:</label>
+            <input type="text" id="sn-tiempo" name="tiempo" class="corto">
+          </div>
+          <div class="campo">
+            <label for="sn-precio">Precio:</label>
+            <input type="number" id="sn-precio" name="precio" class="corto" min="0" step="1">
+          </div>
+
+          <div class="panel__footer panel__footer--derecha">
+            <button type="button" class="btn solo-movil" data-cancelar="servicios">Cancelar</button>
+            <button type="submit" class="btn" id="btn-servicio-nuevo-guardar">Agregar servicio</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============================================================
+           FLUJO 5: Inventario de bebidas
+           ============================================================ -->
+      <section class="vista" id="vista-bebidas" hidden>
+        <ul class="servicios servicios--lista" id="lista-bebidas-admin"></ul>
+        <p class="vacio" id="bebidas-vacio">No hay bebidas registradas</p>
+
+        <div class="panel__footer">
+          <button type="button" class="btn" id="btn-bebida-agregar">Agregar bebida</button>
+        </div>
+      </section>
+
+      <!-- Editar bebida -->
+      <section class="vista" id="vista-bebida-editar" hidden>
+        <form id="form-bebida-editar" novalidate>
+          <h2 class="seccion-titulo">Edita los datos de las bebidas</h2>
+
+          <div class="servicio servicio--vista" id="be-preview">
+            <span class="servicio__icono" aria-hidden="true">🥤</span>
+            <span>
+              <span class="servicio__nombre" id="be-preview-nombre"></span>
+              <span class="servicio__duracion" id="be-preview-cantidad"></span>
+              <span class="servicio__precio" id="be-preview-precio"></span>
+            </span>
+          </div>
+
+          <p class="error" id="error-bebida-editar" role="alert" hidden>Rellene los datos correctamente!</p>
+
+          <div class="campo">
+            <label for="be-nombre">Nombre:</label>
+            <input type="text" id="be-nombre" name="nombre">
+          </div>
+          <div class="campo">
+            <label for="be-precio">Precio:</label>
+            <input type="number" id="be-precio" name="precio" class="corto" min="0" step="1">
+          </div>
+          <div class="campo">
+            <label for="be-cantidad-extra">Cantidad extra:</label>
+            <input type="number" id="be-cantidad-extra" name="cantidadExtra" class="corto" min="0" step="1">
+          </div>
+
+          <div class="panel__footer panel__footer--entre">
+            <button type="button" class="btn btn--fantasma" id="btn-bebida-eliminar">Eliminar bebida</button>
+            <div class="grupo-derecha">
+              <button type="button" class="btn solo-movil" data-cancelar="bebidas">Cancelar</button>
+              <button type="submit" class="btn" id="btn-bebida-editar-guardar">Editar bebida</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Agregar bebida -->
+      <section class="vista" id="vista-bebida-nueva" hidden>
+        <form id="form-bebida-nueva" novalidate>
+          <h2 class="seccion-titulo">Rellena los datos para la creación de nueva bebida</h2>
+          <p class="error" id="error-bebida-nueva" role="alert" hidden>Complete todos los campos</p>
+
+          <div class="campo">
+            <label for="bn-nombre">Nombre:</label>
+            <input type="text" id="bn-nombre" name="nombre">
+          </div>
+          <div class="campo">
+            <label for="bn-precio">Precio:</label>
+            <input type="number" id="bn-precio" name="precio" class="corto" min="0" step="1">
+          </div>
+          <div class="campo">
+            <label for="bn-cantidad">Cantidad:</label>
+            <input type="number" id="bn-cantidad" name="cantidad" class="corto" min="0" step="1">
+          </div>
+
+          <div class="panel__footer panel__footer--derecha">
+            <button type="button" class="btn solo-movil" data-cancelar="bebidas">Cancelar</button>
+            <button type="submit" class="btn" id="btn-bebida-nueva-guardar">Agregar bebida</button>
+          </div>
+        </form>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
